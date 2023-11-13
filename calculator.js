@@ -21,7 +21,9 @@ function divide(a, b) {
 
 function operate(operator, firstNumber, secondNumber) {
     const operatorKey = operatorKeys[operators.indexOf(operator)];
-    return window[operatorKey](parseInt(firstNumber), parseInt(secondNumber));
+    let solution = window[operatorKey](+firstNumber, +secondNumber);
+    solution = Math.round(solution * 1000000000) / 1000000000;
+    return solution;
 }
 
 const display = document.querySelector('#display');
@@ -30,7 +32,7 @@ function updateDisplay(symbol) {
     displayValue = symbol;
 }
 
-// Update display, store first and second value, and call operate on '='
+// Update display, store first and second operand, and compute solution if needed.
 function resolveClick(button) {
     const input = button.currentTarget.textContent;
     if (input == '=' && secondNumber) {
@@ -39,7 +41,9 @@ function resolveClick(button) {
         firstNumber = solution;
         secondNumber = null;
         operator = null;
-    } else if (operators.includes(input) && (!operator)) {
+    } else if (input == '=') {
+        return;
+    } else if (operators.includes(input) && (!operator) && firstNumber) {
         operator = input;
     } else if (operators.includes(input) && operator && secondNumber) {
         const solution = operate(operator, firstNumber, secondNumber);
@@ -48,11 +52,18 @@ function resolveClick(button) {
         secondNumber = null;
         operator = input;
     } else if (input == 'clear') {
-
-    } else if (firstNumber && operator && !secondNumber) {
+        firstNumber = null;
+        secondNumber = null;
+        operator = null
+        updateDisplay(0);
+    } else if (firstNumber && operator && !secondNumber && (!isNaN(+input))) {
+        if (input == 0 && operator == '/') {
+            updateDisplay('https://en.wikipedia.org/wiki/Division_by_zero');
+            return
+        }
         secondNumber = input;
         updateDisplay(secondNumber);
-    }  else if (!secondNumber && (Number.isInteger(+input))) {
+    }  else if (!secondNumber && (!isNaN(+input))) {
         firstNumber = input;
         updateDisplay(firstNumber);
     }
